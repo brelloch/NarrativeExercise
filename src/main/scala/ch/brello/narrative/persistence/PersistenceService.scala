@@ -20,7 +20,7 @@ class PersistenceService(commands: PersistenceCommands, queries: PersistenceQuer
     val range = TimeUtils.getRange(timestamp)
     val currentEpoch = (new Date).getTime
 
-    if (currentEpoch < range._2) { // within the current hour so go to cache for results
+    if (currentEpoch > range._1 && currentEpoch < range._2) { // within the current hour so go to cache for results
       val value: List[Data] = naiveCache.filter(x => x.timestamp > range._1).toList
       Result(value.map(_.userId).distinct.size, value.count(x => x.event == "click"), value.count(x => x.event == "impression"))
     } else { // outside of current cache so go to db
@@ -34,7 +34,7 @@ class PersistenceService(commands: PersistenceCommands, queries: PersistenceQuer
     val currentEpoch = (new Date).getTime
 
     // if in the current hour throw in cache
-    if (currentEpoch < range._2) {
+    if (currentEpoch > range._1 && currentEpoch < range._2) {
       naiveCache += value
       naiveCache = naiveCache.filter(x => x.timestamp > range._1)
     }
